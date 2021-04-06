@@ -1,0 +1,325 @@
+<h2 *ngIf="!hideTitle" style="width: 100%; margin-bottom: 20px; text-align: center">《施工配合方案确认单》</h2>
+<form nz-form [formGroup]="validateForm" class="ant-advanced-search-form">
+  <div nz-row [nzGutter]="24">
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24" id="akagi" style="display: none">
+        <nz-form-label [nzSpan]="4" [nzRequired]="true">方案编号</nz-form-label>
+        <nz-form-control [nzSpan]="18" nzHasFeedback>
+          <input nz-input formControlName="code" placeholder="请输入计划编码" [(ngModel)]="constructionControlPlan.code" />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">施工类型</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <nz-select
+            formControlName="constructionStatus"
+            [(ngModel)]="constructionControlPlan.constructionStatus"
+            (ngModelChange)="clearConstructionLevel()"
+          >
+            <nz-option [nzValue]="constructionConstrolPlanConstant.BC_CONSTRUCTION" nzLabel="B、C类施工"></nz-option>
+            <nz-option [nzValue]="constructionConstrolPlanConstant.NORMAL_CONSTRUCTION" nzLabel="施工"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">等级或级别</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <nz-select formControlName="constructionLevel" [(ngModel)]="constructionControlPlan.constructionLevel">
+            <nz-option
+              *ngIf="constructionConstrolPlanConstant.NORMAL_CONSTRUCTION == constructionControlPlan.constructionStatus"
+              [nzValue]="constructionConstrolPlanConstant.LEVEL1"
+              nzLabel="1级"
+            ></nz-option>
+            <nz-option
+              *ngIf="constructionConstrolPlanConstant.NORMAL_CONSTRUCTION == constructionControlPlan.constructionStatus"
+              [nzValue]="constructionConstrolPlanConstant.LEVEL2"
+              nzLabel="2级"
+            ></nz-option>
+            <nz-option
+              *ngIf="constructionConstrolPlanConstant.NORMAL_CONSTRUCTION == constructionControlPlan.constructionStatus"
+              [nzValue]="constructionConstrolPlanConstant.LEVEL3"
+              nzLabel="3级"
+            ></nz-option>
+            <nz-option
+              *ngIf="constructionConstrolPlanConstant.BC_CONSTRUCTION == constructionControlPlan.constructionStatus"
+              [nzValue]="constructionConstrolPlanConstant.TYPEB"
+              nzLabel="B类"
+            ></nz-option>
+            <nz-option
+              *ngIf="constructionConstrolPlanConstant.BC_CONSTRUCTION == constructionControlPlan.constructionStatus"
+              [nzValue]="constructionConstrolPlanConstant.TYPEC"
+              nzLabel="C类"
+            ></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">线路</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <nz-select formControlName="railwayLineId" [(ngModel)]="constructionControlPlan.railwayLineId">
+            <div *ngFor="let railwayLine of railwayLines">
+              <nz-option [nzValue]="railwayLine.id" nzLabel="{{ railwayLine.name }}"></nz-option>
+            </div>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">行别</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <nz-select formControlName="railwayLineStatus" [(ngModel)]="constructionControlPlan.railwayLineStatus">
+            <nz-option [nzValue]="constructionConstrolPlanConstant.UPRIVER" nzLabel="上行"></nz-option>
+            <nz-option [nzValue]="constructionConstrolPlanConstant.DOWNRIVER" nzLabel="下行"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">施工项目</nz-form-label>
+        <nz-form-control [nzSpan]="18" nzHasFeedback>
+          <input
+            nz-input
+            formControlName="constructionProjectInfo"
+            placeholder="请输入施工项目"
+            [(ngModel)]="constructionControlPlan.constructionProjectInfo"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4" [nzRequired]="true">施工日期及时间</nz-form-label>
+        <nz-form-control [nzSpan]="6" nzHasFeedback>
+          <nz-date-picker
+            style="width: 100%"
+            nzPlaceHolder="开始时间"
+            formControlName="startTime"
+            [(ngModel)]="constructionControlPlan.startTime"
+            [nzDisabledDate]="disabledStartDate"
+            nzFormat="yyyy-MM-dd"
+            (nzOnOpenChange)="handleStartOpenChange($event)"
+          ></nz-date-picker>
+        </nz-form-control>
+        <nz-form-label [nzSpan]="1">至</nz-form-label>
+        <nz-form-control [nzSpan]="6" nzHasFeedback>
+          <nz-date-picker
+            #endDatePicker
+            style="width: 100%"
+            [nzDisabledDate]="disabledEndDate"
+            nzPlaceHolder="结束时间"
+            formControlName="endTime"
+            [(ngModel)]="constructionControlPlan.endTime"
+            nzFormat="yyyy-MM-dd"
+          ></nz-date-picker>
+        </nz-form-control>
+        <nz-form-label [nzSpan]="1">周期</nz-form-label>
+        <nz-form-control [nzSpan]="4">
+          <nz-select formControlName="constructionPeriod" [(ngModel)]="constructionControlPlan.constructionPeriod">
+            <nz-option [nzValue]="constructionConstrolPlanConstant.EVERYDAY" nzLabel="每天"></nz-option>
+            <nz-option [nzValue]="constructionConstrolPlanConstant.EVERY_OTHER_DAY" nzLabel="隔天"></nz-option>
+            <nz-option [nzValue]="constructionConstrolPlanConstant.DIEBUS_TERTIUS" nzLabel="每三天"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4" [nzRequired]="true">施工地点</nz-form-label>
+        <nz-form-control [nzSpan]="8">
+          <nz-select formControlName="startStationId" [(ngModel)]="constructionControlPlan.startStationId">
+            <div *ngFor="let station of stations">
+              <nz-option [nzValue]="station.id" nzLabel="{{ station.name }}"></nz-option>
+            </div>
+          </nz-select>
+        </nz-form-control>
+        <nz-form-label [nzSpan]="1">至</nz-form-label>
+        <nz-form-control [nzSpan]="8">
+          <nz-select formControlName="endStationId" [(ngModel)]="constructionControlPlan.endStationId">
+            <div *ngFor="let station of stations">
+              <nz-option [nzValue]="station.id" nzLabel="{{ station.name }}"></nz-option>
+            </div>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4" [nzRequired]="true">施工里程</nz-form-label>
+        <nz-form-label [nzNoColon]="true" [nzSpan]="1">K</nz-form-label>
+        <nz-form-control [nzSpan]="3">
+          <input
+            nz-input
+            type="number"
+            formControlName="startKilometerKilometerPart"
+            placeholder="请输入公里标"
+            [(ngModel)]="constructionControlPlan.startKilometerKilometerPart"
+            (ngModelChange)="setKilometer()"
+          />
+        </nz-form-control>
+        <nz-form-label [nzNoColon]="true" [nzSpan]="1">+</nz-form-label>
+        <nz-form-control [nzSpan]="3">
+          <nz-input-number
+            formControlName="startKilometerMeterPart"
+            [nzMax]="999"
+            [(ngModel)]="constructionControlPlan.startKilometerMeterPart"
+            (ngModelChange)="setKilometer()"
+          >
+          </nz-input-number>
+        </nz-form-control>
+        <nz-form-label [nzSpan]="1">至</nz-form-label>
+        <nz-form-label [nzNoColon]="true" [nzSpan]="1">K</nz-form-label>
+        <nz-form-control [nzSpan]="3">
+          <input
+            nz-input
+            type="number"
+            formControlName="endKilometerKilometerPart"
+            placeholder="请输入公里标"
+            [(ngModel)]="constructionControlPlan.endKilometerKilometerPart"
+            (ngModelChange)="setKilometer()"
+          />
+        </nz-form-control>
+        <nz-form-label [nzNoColon]="true" [nzSpan]="1">+</nz-form-label>
+        <nz-form-control [nzSpan]="3">
+          <nz-input-number
+            [nzMax]="999"
+            formControlName="endKilometerMeterPart"
+            [(ngModel)]="constructionControlPlan.endKilometerMeterPart"
+            (ngModelChange)="setKilometer()"
+          >
+          </nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4" [nzRequired]="true">距线路中心</nz-form-label>
+        <nz-form-control [nzSpan]="8">
+          <input
+            nz-input
+            type="number"
+            formControlName="startDistanceFromRailway"
+            placeholder="请输入距离"
+            [(ngModel)]="constructionControlPlan.startDistanceFromRailway"
+          />
+        </nz-form-control>
+        <nz-form-label [nzSpan]="1">至</nz-form-label>
+        <nz-form-control [nzSpan]="8">
+          <input
+            nz-input
+            type="number"
+            formControlName="endDistanceFromRailway"
+            placeholder="请输入距离"
+            [(ngModel)]="constructionControlPlan.endDistanceFromRailway"
+          />
+        </nz-form-control>
+        <nz-form-label [nzNoColon]="true" [nzSpan]="1">米</nz-form-label>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">施工内容及影响范围</nz-form-label>
+        <nz-form-control [nzSpan]="18" nzHasFeedback>
+          <input
+            nz-input
+            formControlName="constructionContentAndInfluenceArea"
+            placeholder="施工内容及影响范围"
+            [(ngModel)]="constructionControlPlan.constructionContentAndInfluenceArea"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">建设单位</nz-form-label>
+        <nz-form-control [nzSpan]="18" nzHasFeedback>
+          <input
+            nz-input
+            formControlName="constructDepartment"
+            placeholder="建设单位"
+            [(ngModel)]="constructionControlPlan.constructDepartment"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">施工单位及负责人</nz-form-label>
+        <nz-form-control [nzSpan]="18" nzHasFeedback>
+          <input
+            nz-input
+            formControlName="constructionDepartmentAndPrincipalName"
+            placeholder="施工单位及负责人"
+            [(ngModel)]="constructionControlPlan.constructionDepartmentAndPrincipalName"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">是否需要配合</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <nz-select
+            formControlName="needCooperate"
+            [(ngModel)]="constructionControlPlan.needCooperate"
+            (ngModelChange)="setEditableOrNot($event)"
+          >
+            <nz-option [nzValue]="this.constant.TRUE" nzLabel="是"></nz-option>
+            <nz-option [nzValue]="this.constant.FALSE" nzLabel="否"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">具体配合地点</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <input
+            nz-input
+            formControlName="cooperateLocationInfo"
+            placeholder="具体配合地点"
+            [(ngModel)]="constructionControlPlan.cooperateLocationInfo"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div nz-col [nzSpan]="24">
+      <nz-form-item [nzGutter]="24">
+        <nz-form-label [nzSpan]="4">具体防护措施</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <input
+            nz-input
+            formControlName="protectiveMeasuresInfo"
+            placeholder="具体防护措施"
+            [(ngModel)]="constructionControlPlan.protectiveMeasuresInfo"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+  <!--  <div nz-row>-->
+  <!--    <div nz-col [nzSpan]="24" class="search-area">-->
+  <!--      <button nz-button [disabled]="!validateForm.valid" [nzType]="'primary'">提交</button>-->
+  <!--    </div>-->
+  <!--  </div>-->
+</form>

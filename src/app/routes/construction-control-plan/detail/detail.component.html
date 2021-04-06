@@ -1,0 +1,373 @@
+<page-header [breadcrumb]="breadcrumb" [title]="''"></page-header>
+<ng-template #breadcrumb>
+  <nz-breadcrumb>
+    <nz-breadcrumb-item>
+      <a [routerLink]="['/']">首页</a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+      <a [routerLink]="['/construction-control-plan/list']">动态管控</a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+      <a [routerLink]="['/construction-control-plan/list']">方案管控</a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>方案详情</nz-breadcrumb-item>
+  </nz-breadcrumb>
+</ng-template>
+
+<nz-card nzTitle="方案详情">
+  <form nz-form [formGroup]="validateForm" class="ant-advanced-search-form">
+    <div nz-row [nzGutter]="24">
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24" id="akagi" style="display: none">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">方案编号</nz-form-label>
+          <nz-form-control [nzSpan]="18" nzHasFeedback>
+            <input nz-input formControlName="code" placeholder="请输入计划编码" [(ngModel)]="constructionControlPlan.code" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">施工类型</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <nz-select formControlName="constructionStatus" [(ngModel)]="constructionControlPlan.constructionStatus">
+              <nz-option [nzValue]="constructionConstrolPlanConstant.BC_CONSTRUCTION" nzLabel="B、C类施工"></nz-option>
+              <nz-option [nzValue]="constructionConstrolPlanConstant.NORMAL_CONSTRUCTION" nzLabel="施工"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">施工类别</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <input
+              nz-input
+              formControlName="constructionType"
+              placeholder="请输入施工类别"
+              [(ngModel)]="constructionControlPlan.constructionType"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">线路</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <nz-select
+              formControlName="railwayLineId"
+              [(ngModel)]="constructionControlPlan.railwayLineId"
+              (ngModelChange)="updateRailwayLine()"
+            >
+              <div *ngFor="let railwayLine of railwayLines">
+                <nz-option [nzValue]="railwayLine.id" nzLabel="{{ railwayLine.name }}"></nz-option>
+              </div>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">行别</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <nz-select formControlName="railwayLineStatus" [(ngModel)]="constructionControlPlan.railwayLineStatus">
+              <nz-option [nzValue]="constructionConstrolPlanConstant.UPRIVER" nzLabel="上行"></nz-option>
+              <nz-option [nzValue]="constructionConstrolPlanConstant.DOWNRIVER" nzLabel="下行"></nz-option>
+              <nz-option [nzValue]="constructionConstrolPlanConstant.SINGLE_LINE" nzLabel="单线"></nz-option>
+              <nz-option [nzValue]="constructionConstrolPlanConstant.UPRIVER_AND_DOWNRIVER" nzLabel="上下行"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">施工项目</nz-form-label>
+          <nz-form-control [nzSpan]="18" nzHasFeedback>
+            <input
+              nz-input
+              formControlName="constructionProjectInfo"
+              placeholder="请输入施工项目"
+              [(ngModel)]="constructionControlPlan.constructionProjectInfo"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">施工日期及时间</nz-form-label>
+          <nz-form-control [nzSpan]="6" nzHasFeedback>
+            <nz-date-picker
+              style="width: 100%"
+              nzPlaceHolder="开始日期"
+              formControlName="startTime"
+              [(ngModel)]="constructionControlPlan.startTime"
+              [nzDisabledDate]="disabledStartDate"
+              nzFormat="yyyy-MM-dd"
+              (nzOnOpenChange)="handleStartOpenChange($event)"
+            ></nz-date-picker>
+          </nz-form-control>
+          <nz-form-label [nzSpan]="1">至</nz-form-label>
+          <nz-form-control [nzSpan]="6" nzHasFeedback>
+            <nz-date-picker
+              #endDatePicker
+              style="width: 100%"
+              [nzDisabledDate]="disabledEndDate"
+              nzPlaceHolder="结束日期"
+              formControlName="endTime"
+              [(ngModel)]="constructionControlPlan.endTime"
+              nzFormat="yyyy-MM-dd"
+            ></nz-date-picker>
+          </nz-form-control>
+          <nz-form-label [nzSpan]="1">时间</nz-form-label>
+          <nz-time-picker [ngModelOptions]="{standalone: true}" nzPlaceHolder="开始时间" [(ngModel)]="constructionControlPlan.startHour" nzFormat="HH:mm"
+          ></nz-time-picker>
+          <nz-time-picker [ngModelOptions]="{standalone: true}" nzPlaceHolder="结束时间" [(ngModel)]="constructionControlPlan.endHour" nzFormat="HH:mm"></nz-time-picker>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">登记站</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <nz-select formControlName="signInStationId" [(ngModel)]="constructionControlPlan.signInStationId">
+              <div *ngFor="let station of stations">
+                <nz-option [nzValue]="station.id" nzLabel="{{ station.name }}"></nz-option>
+              </div>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">施工地点</nz-form-label>
+          <nz-form-control [nzSpan]="8">
+            <nz-select formControlName="startStationId" [(ngModel)]="constructionControlPlan.startStationId">
+              <div *ngFor="let station of stations">
+                <nz-option [nzValue]="station.id" nzLabel="{{ station.name }}"></nz-option>
+              </div>
+            </nz-select>
+          </nz-form-control>
+          <nz-form-label [nzSpan]="1">至</nz-form-label>
+          <nz-form-control [nzSpan]="8">
+            <nz-select formControlName="endStationId" [(ngModel)]="constructionControlPlan.endStationId">
+              <div *ngFor="let station of stations">
+                <nz-option [nzValue]="station.id" nzLabel="{{ station.name }}"></nz-option>
+              </div>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4" [nzRequired]="true">施工里程</nz-form-label>
+          <nz-form-label [nzNoColon]="true" [nzSpan]="1">K</nz-form-label>
+          <nz-form-control [nzSpan]="3">
+            <input
+              nz-input
+              type="number"
+              formControlName="startKilometerKilometerPart"
+              placeholder="请输入公里标"
+              [(ngModel)]="constructionControlPlan.startKilometerKilometerPart"
+              (ngModelChange)="setKilometer()"
+            />
+          </nz-form-control>
+          <nz-form-label [nzNoColon]="true" [nzSpan]="1">+</nz-form-label>
+          <nz-form-control [nzSpan]="3">
+            <nz-input-number
+              formControlName="startKilometerMeterPart"
+              [nzMax]="999"
+              [(ngModel)]="constructionControlPlan.startKilometerMeterPart"
+              (ngModelChange)="setKilometer()"
+            >
+            </nz-input-number>
+          </nz-form-control>
+          <nz-form-label [nzSpan]="1">至</nz-form-label>
+          <nz-form-label [nzNoColon]="true" [nzSpan]="1">K</nz-form-label>
+          <nz-form-control [nzSpan]="3">
+            <input
+              nz-input
+              type="number"
+              formControlName="endKilometerKilometerPart"
+              placeholder="请输入公里标"
+              [(ngModel)]="constructionControlPlan.endKilometerKilometerPart"
+              (ngModelChange)="setKilometer()"
+            />
+          </nz-form-control>
+          <nz-form-label [nzNoColon]="true" [nzSpan]="1">+</nz-form-label>
+          <nz-form-control [nzSpan]="3">
+            <nz-input-number
+              [nzMax]="999"
+              formControlName="endKilometerMeterPart"
+              [(ngModel)]="constructionControlPlan.endKilometerMeterPart"
+              (ngModelChange)="setKilometer()"
+            >
+            </nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">施工内容及影响范围</nz-form-label>
+          <nz-form-control [nzSpan]="18" nzHasFeedback>
+            <textarea
+              nz-input
+              style="height: 160px"
+              formControlName="constructionContentAndInfluenceArea"
+              placeholder="施工内容及影响范围"
+              [(ngModel)]="constructionControlPlan.constructionContentAndInfluenceArea"
+            >
+            </textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">建设单位</nz-form-label>
+          <nz-form-control [nzSpan]="18" nzHasFeedback>
+            <textarea
+              nz-input
+              formControlName="constructDepartment"
+              placeholder="建设单位"
+              [(ngModel)]="constructionControlPlan.constructDepartment"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">施工单位及负责人</nz-form-label>
+          <nz-form-control [nzSpan]="18" nzHasFeedback>
+            <textarea
+              nz-input
+              formControlName="constructionDepartmentAndPrincipalName"
+              placeholder="施工单位及负责人"
+              [(ngModel)]="constructionControlPlan.constructionDepartmentAndPrincipalName"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">监理单位及负责人</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <textarea
+              nz-input
+              formControlName="supervisionDepartmentAndPrincipalName"
+              placeholder="监理单位及负责人"
+              [(ngModel)]="constructionControlPlan.supervisionDepartmentAndPrincipalName"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">设备监护单位及负责人</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <textarea
+              nz-input
+              formControlName="equipmentMonitoringDepartmentAndPrincipalName"
+              placeholder="设备监护单位及负责人"
+              [(ngModel)]="constructionControlPlan.equipmentMonitoringDepartmentAndPrincipalName"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">审核处室</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <input
+              nz-input
+              formControlName="auditDepartment"
+              placeholder="审核处室"
+              [(ngModel)]="constructionControlPlan.auditDepartment"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">备注</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <input nz-input formControlName="remarks" placeholder="备注" [(ngModel)]="constructionControlPlan.remarks" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col [nzSpan]="24">
+        <nz-form-item [nzGutter]="24">
+          <nz-form-label [nzSpan]="4">星级</nz-form-label>
+          <nz-form-control [nzSpan]="18">
+            <input nz-input formControlName="starRating" placeholder="星级" [(ngModel)]="constructionControlPlan.starRating" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+</nz-card>
+
+<!--<nz-card nzTitle="施工日期及时间">-->
+<!--  <nz-table-->
+<!--    #editRowTable-->
+<!--    [nzData]="constructionControlPlanWorkTimes"-->
+<!--    [nzLoading]="constructionControlPlanWorkTimeLoading"-->
+<!--    nzSize="default"-->
+<!--  >-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--      <th nzWidth="25%">开始日期</th>-->
+<!--      <th nzWidth="25%">结束日期</th>-->
+<!--      <th nzWidth="25%">开始时间</th>-->
+<!--      <th nzWidth="25%">结束时间</th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    <tr *ngFor="let data of editRowTable.data">-->
+<!--      <ng-container *ngIf="!constructionControlPlanWorkTimeEditCache[data.id].edit; else editTemplate">-->
+<!--        <td>{{ data.typeName }}</td>-->
+<!--        <td>{{ data.name }}</td>-->
+<!--        <td>{{ data.kilometerMark }}</td>-->
+<!--        <td>-->
+<!--          <a (click)="startEdit(data.id)">编辑</a>&nbsp;&nbsp;-->
+<!--        </td>-->
+<!--      </ng-container>-->
+<!--      <ng-template #editTemplate>-->
+<!--        <td><input type="text" nz-input [(ngModel)]="constructionControlPlanWorkTimeEditCache[data.id].data.name"/></td>-->
+<!--        <td><input type="text" nz-input [(ngModel)]="constructionControlPlanWorkTimeEditCache[data.id].data.kilometerMark"/></td>-->
+<!--        <td>-->
+<!--          <a-->
+<!--            nz-popconfirm-->
+<!--            nzPopconfirmTitle="确定要保存修改吗?"-->
+<!--            (nzOnConfirm)="saveEdit(data.id)"-->
+<!--            nzPopconfirmPlacement="topLeft"-->
+<!--            class="save">-->
+<!--            保存-->
+<!--          </a>&nbsp;&nbsp;-->
+<!--          <a (click)="cancelEdit(data.id)">取消</a>-->
+<!--        </td>-->
+<!--      </ng-template>-->
+<!--    </tr>-->
+<!--    </tbody>-->
+<!--  </nz-table>-->
+<!--  <button *ngIf="editIndex === -1" nz-button [nzType]="'dashed'" (click)="add()" nzBlock class="mt-md">-->
+<!--    <i nz-icon nzType="plus"></i>-->
+<!--    <span>新增成员</span>-->
+<!--  </button>-->
+<!--</nz-card>-->
+
+<footer-toolbar errorCollect>
+  <button nz-button nzType="primary" (click)="save()">提交</button>
+</footer-toolbar>

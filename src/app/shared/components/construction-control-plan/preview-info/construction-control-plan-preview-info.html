@@ -1,0 +1,56 @@
+<h2 *ngIf="!hideTitle" style="width: 100%; margin-bottom: 20px; text-align: center">《B/C类施工配合方案确认单》</h2>
+<nz-descriptions nzBordered [nzSize]="'middle'" [nzColumn]="4">
+  <nz-descriptions-item nzTitle="方案编号" [nzSpan]="2">{{ constructionControlPlan.code }}</nz-descriptions-item>
+  <nz-descriptions-item nzTitle="施工类型" [nzSpan]="2" [ngSwitch]="constructionControlPlan.constructionStatus">
+    <span *ngSwitchCase="constructionConstrolPlanConstant.BC_CONSTRUCTION">B、C类施工</span>
+    <span *ngSwitchCase="constructionConstrolPlanConstant.NORMAL_CONSTRUCTION">施工</span>
+  </nz-descriptions-item>
+  <nz-descriptions-item nzTitle="线路" [nzSpan]="2">
+    <span *ngFor="let railwayLine of railwayLines">
+      <span *ngIf="railwayLine.id == constructionControlPlan.railwayLineId">{{ railwayLine.name }}</span>
+    </span>
+  </nz-descriptions-item>
+  <nz-descriptions-item nzTitle="行别" [nzSpan]="2" [ngSwitch]="constructionControlPlan.railwayLineStatus">
+    <span *ngSwitchCase="constructionConstrolPlanConstant.UPRIVER">上行</span>
+    <span *ngSwitchCase="constructionConstrolPlanConstant.DOWNRIVER">下行</span>
+  </nz-descriptions-item>
+  <nz-descriptions-item nzTitle="施工项目" [nzSpan]="2">{{ constructionControlPlan.constructionProjectInfo }}</nz-descriptions-item>
+  <nz-descriptions-item nzTitle="施工日期及时间" [nzSpan]="2">
+    {{ constructionControlPlan.startTime | date:"yyyy-MM-dd" }} 至 {{ constructionControlPlan.endTime | date:"yyyy-MM-dd" }}，
+    <span [ngSwitch]="constructionControlPlan.constructionPeriod">
+      <span *ngSwitchCase="constructionConstrolPlanConstant.EVERYDAY">每天</span>
+      <span *ngSwitchCase="constructionConstrolPlanConstant.EVERY_OTHER_DAY">隔天</span>
+      <span *ngSwitchCase="constructionConstrolPlanConstant.DIEBUS_TERTIUS">每三天</span>
+    </span>
+  </nz-descriptions-item>
+  <nz-descriptions-item nzTitle="施工地点" [nzSpan]="2">
+    <span *ngFor="let station of stations">
+      <span *ngIf="station.id == constructionControlPlan.startStationId"> {{ station.name }} </span> </span
+    >至
+    <span *ngFor="let station of stations">
+      <span *ngIf="station.id == constructionControlPlan.endStationId"> {{ station.name }} </span>
+    </span>
+  </nz-descriptions-item>
+  <nz-descriptions-item nzTitle="施工里程" [nzSpan]="2">
+    K{{startKilometerKilometerPart}}+{{startKilometerMeterPart}} 至 K{{endKilometerKilometerPart}}+{{endKilometerMeterPart}}
+  </nz-descriptions-item>
+  <nz-descriptions-item nzTitle="施工内容及影响范围" [nzSpan]="4"
+    >
+    <div style="width: 1400px">{{ constructionControlPlan.constructionContentAndInfluenceArea }}
+    </div>
+  </nz-descriptions-item
+  >
+  <!--  <nz-descriptions-item nzTitle="施工机械"></nz-descriptions-item>-->
+</nz-descriptions>
+
+<nz-modal
+  [nzWidth]="1600"
+  nzTitle="施工范围预览"
+  [(nzVisible)]="showPlanMap"
+  [nzContent]="planMapContent"
+  (nzOnCancel)="this.showPlanMap = false"
+>
+  <ng-template #planMapContent>
+    <construction-control-plan-preview [constructionControlPlanId]="constructionControlPlanId"> </construction-control-plan-preview>
+  </ng-template>
+</nz-modal>
